@@ -1,0 +1,222 @@
+from tkinter import *
+from tkinter import PhotoImage
+from tkinter import messagebox
+from datetime import datetime
+from tkinter import filedialog
+
+def cek_login():
+    global login_window
+    username = username_entry.get()
+    password = password_entry.get()
+    
+    # Ganti dengan kondisi login yang sesuai
+    if username == "Siap Tempur Alpro" and password == "03melawan":
+        login_window.deiconify() # Menampilkan jendela kalkulator BMI setelah login sukses
+        login_window.destroy()
+    else:
+        messagebox.showerror("Error", "Username atau password salah")
+
+# Fungsi untuk menampilkan jendela login
+def tampilkan_login():
+    global login_window, username_entry, password_entry
+    login_window = Tk()
+    login_window.title("Login")
+    login_window.geometry("500x500")
+    login_window.config(bg="#0000FF")
+
+    frame_login = Frame(login_window, padx=10, pady=10)
+    frame_login.pack(expand=True)
+    frame_logo = Frame(login_window)
+    frame_logo.pack(side="top")
+
+    # # Add your logo label here
+    # logo_label = Label(frame_logo, text="Your Logo", font=("Arial", 20), bg="#0000FF", fg="white")
+    # logo_label.pack(pady=10)
+
+    # Create a label to display the image
+    image = PhotoImage(file="logo-removebg-preview.png")
+    image = image.subsample(2)
+
+    # Create a label to display the image
+    image_label = Label(frame_logo, image=image)
+    image_label.image = image  # Keep a reference to avoid garbage collection
+    image_label.pack(side="top")
+
+    label_username = Label(frame_login, text="Username:")
+    label_username.grid(row=0, column=0, sticky="w")
+
+    username_entry = Entry(frame_login)
+    username_entry.grid(row=0, column=1, pady=5)
+
+    label_password = Label(frame_login, text="Password:")
+    label_password.grid(row=1, column=0, sticky="w")
+
+    password_entry = Entry(frame_login, show="*")
+    password_entry.grid(row=1, column=1, pady=5)
+
+    tombol_login = Button(frame_login, text="Login", command=cek_login)
+    tombol_login.grid(row=2, columnspan=2, pady=5)
+
+# Tampilkan jendela login saat aplikasi dimulai
+tampilkan_login()
+login_window.mainloop()
+
+def hapus_inputan():
+    input_nama.delete(0, "end")
+    input_umur.delete(0, "end")
+    input_tinggi.delete(0, "end")
+    input_massa.delete(0, "end")
+
+
+def kalkulator_nilai_bmi(massa, tinggi):
+    tinggi_meter = tinggi / 100
+    nilai_bmi = massa / (tinggi_meter**2)
+    return nilai_bmi
+
+
+def mencari_bmi():
+    waktu_sekarang = datetime.now()
+    kategori_bmi = ""
+    nama = input_nama.get()
+    if nama.isalpha() == False:
+        messagebox.showerror("bmi-kelompok 3", "Nama harus berupa huruf")
+        return
+    umur = input_umur.get()
+    if umur.isnumeric() == False or int(umur) < 0:
+        messagebox.showerror(
+            "bmi-kelompok 3", "Umur harus berupa angka positif")
+        return
+    try:
+        nilai_massa = float(input_massa.get())
+        nilai_tinggi = float(input_tinggi.get())
+    except ValueError:
+        messagebox.showerror(
+            "bmi-kelompok 3", "Massa dan Tinggi harus berupa angka")
+        return
+    bmi = kalkulator_nilai_bmi(nilai_massa, nilai_tinggi)
+    if bmi < 18.5:
+        kategori_bmi = "Cungkring"
+    elif 18.5 <= bmi < 24.9:
+        kategori_bmi = "Sehat Wal Afiat"
+    elif 24.9 <= bmi < 29.9:
+        kategori_bmi = "Kelebihan Berat Badan"
+    else:
+        kategori_bmi = "GEMBROOOT"
+
+    data = f"""
+Nama: {nama}
+Umur: {umur} tahun
+Berat Badan: {input_massa.get()} kg
+Tinggi Badan: {input_tinggi.get()} cm 
+BMI: {bmi} ({kategori_bmi}) 
+Waktu: {waktu_sekarang}
+"""
+    with open("bmi_records.txt", "a") as file:
+        file.write(data + "\n\n")
+    messagebox.showinfo(
+        "bmi-kelompok 3", f'{data}\nData tersimpan di "bmi_records.txt"'
+    )
+
+
+# def tampilkan_history():
+#     history_window = Tk()
+#     history_window.title("History BMI Records")
+#     history_window.geometry("600x400")
+
+#     history_text = ScrolledText(history_window, wrap="word")
+#     history_text.pack(expand=True, fill="both")
+
+#     try:
+#         with open("bmi_records.txt", "r") as file:
+#             history_text.insert("insert", file.read())
+#     except FileNotFoundError:
+#         messagebox.showinfo("bmi-kelompok 3", "File history tidak ditemukan.")
+
+def openFile():
+    ws = Tk()
+    ws.title("History")
+    ws.geometry("400x400")
+    txtarea = Text(ws, width=40, height=20)
+    txtarea.pack(pady=20)
+
+    pathh = Entry(ws)
+    pathh.pack(expand=True,  padx=20)
+
+    Button(
+        ws,
+        text="Open File",
+        command=openFile
+    ).pack(expand=True, padx=20)
+    ws['bg'] = '#0000FF'
+
+    tf = filedialog.askopenfilename(
+        initialdir="C:/Users/ACER/PycharmProjects/pythonProject/bmi_records",
+        title="Open Text file",
+        filetypes=(("Text Files", "*.txt"),)
+    )
+    pathh.insert(END, tf)
+    tf = open(tf, 'r')
+    data = tf.read()
+    txtarea.insert(END, data)
+    tf.close()
+
+
+app = Tk()
+app.title("KALKULATOR BMI - KELOMPOK 3")
+app.geometry("500x500")
+app.config(bg="#0000FF")
+
+frame_utama = Frame(app, padx=50, pady=50)
+frame_utama.pack(expand=True)
+
+label_nama = Label(frame_utama, text="Nama Anda")
+label_nama.grid(row=1, column=1)
+
+input_nama = Entry(
+    frame_utama,
+)
+input_nama.grid(row=1, column=2, pady=5)
+
+label_umur = Label(frame_utama, text="Umur Anda (2 - 120)")
+label_umur.grid(row=2, column=1)
+
+input_umur = Entry(
+    frame_utama,
+)
+input_umur.grid(row=2, column=2, pady=5)
+
+label_berat = Label(frame_utama, text="Tinggi Badan (cm)  ")
+label_berat.grid(row=3, column=1)
+
+weight_lb = Label(
+    frame_utama,
+    text="Berat Badan (kg)  ",
+)
+weight_lb.grid(row=4, column=1)
+
+input_tinggi = Entry(
+    frame_utama,
+)
+input_tinggi.grid(row=3, column=2, pady=5)
+
+input_massa = Entry(
+    frame_utama,
+)
+input_massa.grid(row=4, column=2, pady=5)
+
+frame_tombol = Frame(frame_utama)
+frame_tombol.grid(row=5, columnspan=3, pady=10)
+
+tombol_hitung = Button(frame_tombol, text="Hitung", command=mencari_bmi)
+tombol_hitung.grid(row=1, column=1, padx=0)
+
+tombol_reset = Button(frame_tombol, text="Reset", command=hapus_inputan)
+tombol_reset.grid(row=1, column=2, padx=0)
+
+tombol_keluar = Button(frame_tombol, text="Keluar", command=app.destroy)
+tombol_keluar.grid(row=1, column=3, padx=0)
+
+tombol_history = Button(frame_tombol, text="History", command=openFile)
+tombol_history.grid(row=1, column=3, padx=0)
+
+app.mainloop()
